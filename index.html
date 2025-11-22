@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Here</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --terracotta: #C85A3E;
+            --cream: #F5EBE0;
+            --sage: #7A8B7A;
+            --olive: #5d7047;
+            --white: #FFFFFF;
+            --text-dark: #5A4A42;
+            --footer-bg: #C85A3E;
+            --footer-text: #5e2b1e;
+        }
+
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background: var(--cream);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: clamp(4.5rem, 5vw, 3.5rem);
+            font-weight: 300;
+            color: var(--terracotta);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+            text-transform: lowercase;
+        }
+
+        .subtitle {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--terracotta);
+            max-width: 900px;
+        }
+
+        .subtitle strong {
+            font-weight: 700;
+        }
+
+        .cards-section {
+            margin: 4rem 0;
+        }
+
+        .cards-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 2rem 0;
+        }
+
+        .card {
+            background: transparent;
+            border-radius: 12px;
+            width: 240px;
+            min-height: 280px;
+            position: relative;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            min-height: 280px;
+            transition: transform 0.6s, box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 12px;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+            box-shadow: 
+                0 12px 40px rgba(90, 74, 66, 0.2),
+                0 0 0 1px rgba(90, 74, 66, 0.08);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            min-height: 280px;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) rotate(var(--card-angle, 0deg));
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            justify-content: left;
+        }
+
+        .card.prompt .card-front,
+        .card.prompt .card-back { 
+            background: var(--terracotta); 
+            color: white;
+        }
+
+        .card.constraint .card-front,
+        .card.constraint .card-back { 
+            background: white;
+            color: var(--text-dark);
+        }
+        
+        .card.objective .card-front,
+        .card.objective .card-back { 
+            background: white;
+            color: var(--text-dark);
+        }
+        
+        .card.question .card-front,
+        .card.question .card-back { 
+            background: var(--olive);
+            color: white;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) rotate(var(--card-angle, 0deg));
+        }
+
+        .card-label {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            color: inherit;
+        }
+
+        .card-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: inherit;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-align: left;
+            font-style: italic;
+        }
+
+        .back-label {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .back-content {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        button {
+            font-family: 'Public Sans', sans-serif;
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(200, 90, 62, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(200, 90, 62, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .content-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin: 4rem 0;
+        }
+
+        .content-block h2 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--terracotta);
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .content-block p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--terracotta);
+        }
+
+        footer {
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .footer-content a {
+            color: var(--footer-text);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .footer-content a:hover {
+            border-bottom-color: var(--footer-text);
+        }
+
+        @media (max-width: 1024px) {
+            .content-section {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 350px;
+            }
+
+            button {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>from here</h1>
+            <p class="subtitle">
+                A card game grounded in jugaad thinking—the resourceful, context-aware problem-solving that honors cultural knowledge and local materials. <strong>Draw four cards to create your unique challenge.</strong>
+            </p>
+        </header>
+
+        <section class="cards-section">
+            <div class="cards-container" id="cardsContainer">
+                <div class="card prompt" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-label">Prompt</div>
+                            <div class="card-content" id="promptContent">Build a portable shade structure for outdoor work using only two items</div>
+                            <div class="card-footer">what is this?</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="back-label">About Prompts</div>
+                            <div class="back-content">This is the object you need to create. Think of this as the recognized need that drives your making.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card constraint" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-label">Constraint</div>
+                            <div class="card-content" id="constraintContent">All materials must be sourced within a 5-minute walk from your home—without spending money</div>
+                            <div class="card-footer">what is this?</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="back-label">About Constraints</div>
+                            <div class="back-content">Jugaad thrives on scarcity. This card defines your resource limitations and the level of challenge you'll work within.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card objective" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-label">Objective</div>
+                            <div class="card-content" id="objectiveContent">Ensure the solution accounts for the actual physical space you occupy daily</div>
+                            <div class="card-footer">what is this?</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="back-label">About Objectives</div>
+                            <div class="back-content">Using jugaad principles, this card helps you identify the purpose behind what you're creating for this recognized need.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card question" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-label">Question</div>
+                            <div class="card-content" id="questionContent">How are you integrating local knowledge systems into this object?</div>
+                            <div class="card-footer">what is this?</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="back-label">About Questions</div>
+                            <div class="back-content">This perspective encourages thinking and making grounded in cultural and indigenous practices, bringing depth to your prompt and solution.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button onclick="regenerateCards()">Draw New Cards</button>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="content-block">
+                <p>
+                    Jugaad exemplifies ingenuity that emerges from within specific cultural contexts, often as a response to resource constraints. It embodies the creative spirit that transforms limitations into opportunities—prioritizing local knowledge, available resources, and contextual problem-solving. This anti-colonial and anti-capitalist practice provides a lens for understanding how different approaches to innovation reflect varying cultural values and material conditions.
+                </p>
+            </div>
+            <div class="content-block">
+                <h2>How might responsible AI development move beyond monolithic approaches to embrace regional cultures, practices, and behaviors in human-centered design?</h2>
+                <p>
+                    This research uses "jugaad"—an Indian innovation methodology—as a framework to examine how AI excludes indigenous problem-solving. Through comparative analysis of human vs. AI responses to identical challenges, this work reveals patterns of technological colonialism.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>
+                Concept and design by Nidhi Singh Rathore; Based on research by Nidhi Singh Rathore & Shreya Thakkar, from Jugaad to Generative AI: A Framework for Culturally Responsive Human-Centered AI. For more information about the research, visit: <a href="https://anotherism.cargo.site" target="_blank">anotherism.cargo.site</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const cards = {
+            prompts: [
+                "Create a bird feeder for an urban apartment, using a minimum of three resources available to you.",
+                "Identify a household object to use as a doorstop",
+                "Create a system to water plants while you're away for a week, using materials you'd otherwise discard.",
+                "Build a portable shade structure for outdoor work using only two items",
+                "Devise a method to dry clothes without electricity or a traditional clothesline.",
+                "Create a seed sprouting system using containers you already own.",
+                "Design a tool organizer for a small workspace using only cardboard and fabric scraps."
+            ],
+            constraints: [
+                "You live in a city, and have limited open space",
+                "You can only use items from your last takeaway order",
+                "You cannot use websites, digital tools, or written instructions. You can only seek help through spoken conversation with someone from an older generation.",
+                "You must incorporate something borrowed from a neighbor",
+                "All materials must be sourced within a 5-minute walk from your home—without spending money",
+                "You must use at least one natural element (stone, wood, plant matter)",
+                "You must incorporate something typically considered \"waste\"",
+                "No purchases allowed—only use what you already own, can borrow, or would otherwise discard."
+            ],
+            objectives: [
+                "Prioritize practical effectiveness over visual appeal",
+                "Make it immediately usable without instructions or learning curve",
+                "Resist the urge to make it \"scalable\" or generalizable",
+                "Ensure the solution accounts for the actual physical space you occupy daily",
+                "It solves the actual problem, not an idealized version of the problem",
+                "Ground the solution in practices specific to where you actually live",
+                "Reflect local material availability and cultural norms",
+                "Incorporate the problem-solving approaches common in your community"
+            ],
+            questions: [
+                "How will you ensure this object is culturally responsive to where you live?",
+                "How are you integrating local knowledge systems into this object?",
+                "How might you validate and incorporate indigenous knowledge systems?",
+                "How do western paradigms limit our creative potential?",
+                "What creative practices get lost in globalized approaches?",
+                "What traditional knowledge systems inform your creative process?",
+                "How do different cultures approach resource constraints differently?",
+                "What is the story of this object?"
+            ]
+        };
+
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
+        function getRandomItem(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function randomizeCardAngles() {
+            const cardElements = document.querySelectorAll('.card');
+            cardElements.forEach(card => {
+                const angle = (Math.random() * 6) - 3;
+                card.style.setProperty('--card-angle', `${angle}deg`);
+                card.style.transform = `rotate(${angle}deg)`;
+            });
+        }
+
+        function displayCards() {
+            // Update only the front content
+            const promptCard = document.querySelector('.card.prompt .card-front .card-content');
+            const constraintCard = document.querySelector('.card.constraint .card-front .card-content');
+            const objectiveCard = document.querySelector('.card.objective .card-front .card-content');
+            const questionCard = document.querySelector('.card.question .card-front .card-content');
+
+            promptCard.textContent = getRandomItem(cards.prompts);
+            constraintCard.textContent = getRandomItem(cards.constraints);
+            objectiveCard.textContent = getRandomItem(cards.objectives);
+            questionCard.textContent = getRandomItem(cards.questions);
+            
+            randomizeCardAngles();
+        }
+
+        function regenerateCards() {
+            // First flip all cards back if they're flipped
+            const allCards = document.querySelectorAll('.card.flipped');
+            allCards.forEach(card => card.classList.remove('flipped'));
+            
+            // Then update content
+            displayCards();
+        }
+
+        // Initialize on page load
+        displayCards();
+    </script>
+</body>
+</html>
