@@ -44,7 +44,7 @@
 
         h1 {
             font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: clamp(4.5rem, 5vw, 3.5rem);
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
             font-weight: 300;
             color: var(--terracotta);
             margin-bottom: 0.5rem;
@@ -86,6 +86,11 @@
             position: relative;
             cursor: pointer;
             perspective: 1000px;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.05) rotate(var(--card-angle, 0deg));
         }
 
         .card-inner {
@@ -95,13 +100,13 @@
             transition: transform 0.6s, box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
             border-radius: 12px;
+            box-shadow: 
+                0 4px 20px rgba(90, 74, 66, 0.12),
+                0 0 0 1px rgba(90, 74, 66, 0.05);
         }
 
         .card.flipped .card-inner {
             transform: rotateY(180deg);
-            box-shadow: 
-                0 12px 40px rgba(90, 74, 66, 0.2),
-                0 0 0 1px rgba(90, 74, 66, 0.08);
         }
 
         .card-front, .card-back {
@@ -113,10 +118,6 @@
             flex-direction: column;
             border-radius: 12px;
             padding: 2rem 1.5rem;
-        }
-
-        .card:hover {
-            transform: translateY(-8px) rotate(var(--card-angle, 0deg));
         }
 
         .card-back {
@@ -146,10 +147,6 @@
         .card.question .card-back { 
             background: var(--olive);
             color: white;
-        }
-
-        .card:hover {
-            transform: translateY(-8px) rotate(var(--card-angle, 0deg));
         }
 
         .card-label {
@@ -191,6 +188,28 @@
             font-size: 0.9rem;
             line-height: 1.7;
             text-align: left;
+        }
+
+        .carousel-dots {
+            display: none;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--terracotta);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .carousel-dot.active {
+            opacity: 1;
+            transform: scale(1.3);
         }
 
         .button-container {
@@ -285,15 +304,36 @@
             }
 
             .cards-container {
-                flex-direction: column;
-                align-items: center;
-                padding: 2rem 0 2rem 1.5em;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                scroll-behavior: smooth;
+                gap: 1.5rem;
+                padding: 2rem 1rem;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                justify-content: flex-start;
+            }
+
+            .cards-container::-webkit-scrollbar {
+                display: none;
             }
 
             .card {
-                width: 80vw;
-                flex-shrink: 0;
-                max-width: 350px;
+                flex: 0 0 80vw;
+                max-width: 320px;
+                scroll-snap-align: center;
+            }
+
+            .card:hover {
+                transform: rotate(var(--card-angle, 0deg));
+            }
+
+            .carousel-dots {
+                display: flex;
             }
 
             button {
@@ -369,6 +409,13 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="carousel-dots" id="carouselDots">
+                <div class="carousel-dot active" data-index="0"></div>
+                <div class="carousel-dot" data-index="1"></div>
+                <div class="carousel-dot" data-index="2"></div>
+                <div class="carousel-dot" data-index="3"></div>
             </div>
 
             <div class="button-container">
@@ -460,7 +507,6 @@
         }
 
         function displayCards() {
-            // Update only the front content
             const promptCard = document.querySelector('.card.prompt .card-front .card-content');
             const constraintCard = document.querySelector('.card.constraint .card-front .card-content');
             const objectiveCard = document.querySelector('.card.objective .card-front .card-content');
@@ -475,16 +521,107 @@
         }
 
         function regenerateCards() {
-            // First flip all cards back if they're flipped
             const allCards = document.querySelectorAll('.card.flipped');
             allCards.forEach(card => card.classList.remove('flipped'));
             
-            // Then update content
             displayCards();
+            
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const firstCard = document.querySelector('.card');
+                    if (firstCard) {
+                        firstCard.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'center'
+                        });
+                    }
+                    updateActiveDot();
+                }, 100);
+            }
         }
 
-        // Initialize on page load
         displayCards();
+
+        // Mobile carousel functionality
+        const cardsContainer = document.getElementById('cardsContainer');
+        const carouselDots = document.querySelectorAll('.carousel-dot');
+
+        function centerFirstCard() {
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const firstCard = document.querySelector('.card');
+                    if (firstCard) {
+                        firstCard.scrollIntoView({
+                            behavior: 'auto',
+                            block: 'nearest',
+                            inline: 'center'
+                        });
+                    }
+                }, 100);
+            }
+        }
+
+        function updateActiveDot() {
+            if (window.innerWidth > 768) return;
+            
+            const cards = document.querySelectorAll('.card');
+            const containerRect = cardsContainer.getBoundingClientRect();
+            const containerCenter = containerRect.left + containerRect.width / 2;
+            
+            let closestIndex = 0;
+            let closestDistance = Infinity;
+            
+            cards.forEach((card, index) => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const distance = Math.abs(cardCenter - containerCenter);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = index;
+                }
+            });
+            
+            carouselDots.forEach((dot, index) => {
+                if (index === closestIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        carouselDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.getAttribute('data-index'));
+                const cards = document.querySelectorAll('.card');
+                const targetCard = cards[index];
+                
+                if (targetCard) {
+                    targetCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'center'
+                    });
+                }
+            });
+        });
+
+        let scrollTimeout;
+        cardsContainer.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(updateActiveDot, 50);
+        });
+
+        window.addEventListener('load', centerFirstCard);
+        window.addEventListener('resize', () => {
+            centerFirstCard();
+            updateActiveDot();
+        });
+        
+        centerFirstCard();
+        updateActiveDot();
     </script>
 </body>
 </html>
